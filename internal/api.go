@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Next     *string
 	Previous *string
+	Cache    *Cache
 }
 
 const (
@@ -31,6 +32,14 @@ func GetLocation(config *Config) (LocationArea, error) {
 }
 
 func handleGetRequest[T any](url string, config *Config, object *T) error {
+	if data, ok := config.Cache.Get(url); ok {
+		err := json.Unmarshal(data, &object)
+		if err != nil {
+			return fmt.Errorf("could not transform cached JSON to go struct: %v", err)
+		}
+		return nil
+	}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("could not send request: %v", err)
@@ -47,6 +56,9 @@ func handleGetRequest[T any](url string, config *Config, object *T) error {
 	if err != nil {
 		return fmt.Errorf("could not read response with io: %v", err)
 	}
+
+	config.Cache.Add(url, body)
+
 	err = json.Unmarshal(body, &object)
 	if err != nil {
 		return fmt.Errorf("could not transform JSON to go struct: %v", err)

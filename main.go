@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/markoc1120/pokedexcli/app"
 	"github.com/markoc1120/pokedexcli/internal"
@@ -11,7 +12,9 @@ import (
 
 func main() {
 	commands := app.GetCommands()
-	config := internal.Config{}
+	config := internal.Config{
+		Cache: internal.NewCache(5 * time.Minute),
+	}
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
