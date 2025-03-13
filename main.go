@@ -21,6 +21,7 @@ func main() {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		input := app.CleanInput(scanner.Text())
+		config.Arguments = input[1:]
 		if command, ok := commands[input[0]]; ok {
 			err := command.Callback(&commands, &config)
 			if err != nil {

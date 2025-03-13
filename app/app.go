@@ -52,6 +52,21 @@ func commandMapb(commands *commandsArg, config *internal.Config) error {
 	return nil
 }
 
+func commandExplore(commands *commandsArg, config *internal.Config) error {
+	fmt.Println("Exploring pastoria-city-area...")
+
+	locationAreaDetail, err := internal.GetPokemon(config, config.Arguments[0])
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Found Pokemon:")
+	for _, pokemon := range locationAreaDetail.PokemonEncounters {
+		fmt.Printf(" - %v\n", pokemon.Pokemon.Name)
+	}
+	return nil
+}
+
 func CleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
 }
@@ -77,6 +92,11 @@ func GetCommands() commandsArg {
 			name:        "mapb",
 			description: "Displays previous 20 LocationAreas",
 			Callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Displays pokemons in a specific LocationArea",
+			Callback:    commandExplore,
 		},
 	}
 	return commands

@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	Next     *string
-	Previous *string
-	Cache    *Cache
+	Next      *string
+	Previous  *string
+	Cache     *Cache
+	Arguments []string
 }
 
 const (
@@ -27,6 +28,16 @@ func GetLocation(config *Config) (LocationArea, error) {
 	err := handleGetRequest(requestURL, config, &object)
 	if err != nil {
 		return LocationArea{}, err
+	}
+	return object, nil
+}
+
+func GetPokemon(config *Config, query string) (LocationAreaDetail, error) {
+	requestURL := locationURL + query
+	var object LocationAreaDetail
+	err := handleGetRequest(requestURL, config, &object)
+	if err != nil {
+		return LocationAreaDetail{}, err
 	}
 	return object, nil
 }
