@@ -13,7 +13,8 @@ import (
 func main() {
 	commands := app.GetCommands()
 	config := internal.Config{
-		Cache: internal.NewCache(5 * time.Minute),
+		Cache:    internal.NewCache(5 * time.Minute),
+		Pokemons: make(map[string]internal.Pokemon),
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)

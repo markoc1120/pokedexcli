@@ -12,6 +12,7 @@ type Config struct {
 	Previous  *string
 	Cache     *Cache
 	Arguments []string
+	Pokemons  map[string]Pokemon
 }
 
 const (
@@ -32,7 +33,7 @@ func GetLocation(config *Config) (LocationArea, error) {
 	return object, nil
 }
 
-func GetPokemon(config *Config, query string) (LocationAreaDetail, error) {
+func GetLocationDetail(config *Config, query string) (LocationAreaDetail, error) {
 	requestURL := locationURL + query
 	var object LocationAreaDetail
 	err := handleGetRequest(requestURL, config, &object)
@@ -40,6 +41,16 @@ func GetPokemon(config *Config, query string) (LocationAreaDetail, error) {
 		return LocationAreaDetail{}, err
 	}
 	return object, nil
+}
+
+func GetPokemon(config *Config, query string) (Pokemon, error) {
+	requestURL := pokemonURL + query
+	var pokemon Pokemon
+	err := handleGetRequest(requestURL, config, &pokemon)
+	if err != nil {
+		return Pokemon{}, err
+	}
+	return pokemon, nil
 }
 
 func handleGetRequest[T any](url string, config *Config, object *T) error {

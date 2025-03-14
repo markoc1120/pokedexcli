@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -55,7 +56,7 @@ func commandMapb(commands *commandsArg, config *internal.Config) error {
 func commandExplore(commands *commandsArg, config *internal.Config) error {
 	fmt.Println("Exploring pastoria-city-area...")
 
-	locationAreaDetail, err := internal.GetPokemon(config, config.Arguments[0])
+	locationAreaDetail, err := internal.GetLocationDetail(config, config.Arguments[0])
 	if err != nil {
 		return err
 	}
@@ -63,6 +64,54 @@ func commandExplore(commands *commandsArg, config *internal.Config) error {
 	fmt.Println("Found Pokemon:")
 	for _, pokemon := range locationAreaDetail.PokemonEncounters {
 		fmt.Printf(" - %v\n", pokemon.Pokemon.Name)
+	}
+	return nil
+}
+
+func commandCatch(commands *commandsArg, config *internal.Config) error {
+	pokemonName := config.Arguments[0]
+	fmt.Printf("Throwing a Pokeball at %v...\n", pokemonName)
+	pokemon, err := internal.GetPokemon(config, pokemonName)
+	if err != nil {
+		return fmt.Errorf("there is no pokemon called: %v", pokemonName)
+	}
+	probabilityOfCatch := rand.Float32() * float32(pokemon.BaseExperience)
+	if probabilityOfCatch < 30.0 {
+		fmt.Printf("%v escaped!\n", pokemonName)
+	} else {
+		fmt.Printf("%v was caught!\n", pokemonName)
+		config.Pokemons[pokemonName] = pokemon
+	}
+	return nil
+}
+
+func commandList(commands *commandsArg, config *internal.Config) error {
+	fmt.Print("Listing all your pokemons...\n")
+	if len(config.Pokemons) == 0 {
+		fmt.Println("You haven't caught any pokemons yet")
+		return nil
+	}
+	for _, pokemon := range config.Pokemons {
+		fmt.Printf(" - %v\n", pokemon.Name)
+	}
+	return nil
+}
+
+func commandInspect(commands *commandsArg, config *internal.Config) error {
+	pokemonName := config.Arguments[0]
+	if pokemon, ok := config.Pokemons[pokemonName]; !ok {
+		fmt.Println("you have not caught that pokemon")
+	} else {
+		fmt.Printf("Name: %v\n", pokemon.Name)
+		fmt.Printf("Height: %v\n", pokemon.Height)
+		fmt.Printf("Weight: %v\n", pokemon.Weight)
+		fmt.Printf("Stats: \n")
+		for _, stat := range pokemon.Stats {
+			fmt.Printf(" -%v: %v\n", stat.Stat.Name, stat.BaseStat)
+		}
+		for _, tp := range pokemon.Types {
+			fmt.Printf(" - %v\n", tp.Type.Name)
+		}
 	}
 	return nil
 }
@@ -97,6 +146,21 @@ func GetCommands() commandsArg {
 			name:        "explore",
 			description: "Displays pokemons in a specific LocationArea",
 			Callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a pokemon",
+			Callback:    commandCatch,
+		},
+		"list": {
+			name:        "list",
+			description: "List all the pokemons you caught previously",
+			Callback:    commandList,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a pokemon you caught previously",
+			Callback:    commandInspect,
 		},
 	}
 	return commands
