@@ -16,7 +16,6 @@ func main() {
 	config := internal.Config{
 		Cache:    internal.NewCache(5 * time.Minute),
 		Pokemons: make(map[string]internal.Pokemon),
-		History:  []string{},
 	}
 
 	l, err := readline.NewEx(&readline.Config{

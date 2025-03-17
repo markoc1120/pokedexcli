@@ -13,7 +13,6 @@ type Config struct {
 	Cache     *Cache
 	Arguments []string
 	Pokemons  map[string]Pokemon
-	History   []string
 }
 
 const (
