@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"io"
+	"strings"
 	"time"
 
+	"github.com/chzyer/readline"
 	"github.com/markoc1120/pokedexcli/app"
 	"github.com/markoc1120/pokedexcli/internal"
 )
@@ -15,13 +16,35 @@ func main() {
 	config := internal.Config{
 		Cache:    internal.NewCache(5 * time.Minute),
 		Pokemons: make(map[string]internal.Pokemon),
+		History:  []string{},
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
+	l, err := readline.NewEx(&readline.Config{
+		Prompt:            "Pokedex > ",
+		HistoryFile:       app.HistoryFilePath,
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+	l.CaptureExitSignal()
+
 	for {
-		fmt.Print("Pokedex > ")
-		scanner.Scan()
-		input := app.CleanInput(scanner.Text())
+		line, err := l.Readline()
+		if err == readline.ErrInterrupt {
+			if len(line) == 0 {
+				break
+			} else {
+				continue
+			}
+		} else if err == io.EOF {
+			break
+		}
+
+		input := strings.Fields(strings.TrimSpace(line))
 		config.Arguments = input[1:]
 		if command, ok := commands[input[0]]; ok {
 			err := command.Callback(&commands, &config)

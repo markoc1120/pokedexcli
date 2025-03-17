@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
 	"os"
@@ -16,6 +17,8 @@ type cliCommand struct {
 	description string
 	Callback    func(*commandsArg, *internal.Config) error
 }
+
+var HistoryFilePath = "/tmp/readline.tmp"
 
 func commandExit(commands *commandsArg, config *internal.Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
@@ -116,6 +119,27 @@ func commandInspect(commands *commandsArg, config *internal.Config) error {
 	return nil
 }
 
+func commandHistory(commands *commandsArg, config *internal.Config) error {
+	fmt.Println("Listing history ...")
+
+	f, err := os.Open(HistoryFilePath)
+	if err != nil {
+		return fmt.Errorf("couldn't open history file: %v", err)
+	}
+	defer f.Close()
+
+	scanner, i := bufio.NewScanner(f), 0
+	for scanner.Scan() {
+		fmt.Printf("%5d %v\n", i, scanner.Text())
+		i++
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("scanner error: %v", err)
+	}
+	return nil
+}
+
 func CleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
 }
@@ -161,6 +185,11 @@ func GetCommands() commandsArg {
 			name:        "inspect",
 			description: "Inspect a pokemon you caught previously",
 			Callback:    commandInspect,
+		},
+		"history": {
+			name:        "history",
+			description: "List commands used previously",
+			Callback:    commandHistory,
 		},
 	}
 	return commands
